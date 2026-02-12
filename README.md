@@ -1,2 +1,2 @@
 # LLITED
-LLITED MIGSI data products and analysis
+LLITED CubeSat analysis scripts
