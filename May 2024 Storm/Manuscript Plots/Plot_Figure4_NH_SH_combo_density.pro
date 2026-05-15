@@ -58,6 +58,10 @@ for i=0,5 do begin $
   neutral=[1,2,3,7,8,9]
   ion = [4,5,6,10,11,12]
   
+  ; Hemisphere labels (NH=Northern, SH=Southern) for each subplot
+  hemlabel=['NH','NH','NH','SH','SH','SH']  ; matches order in hem array
+  hemcolor=['light salmon','light salmon','light salmon','light sky blue','light sky blue','light sky blue']
+
   ; Plot MIGSI Neutral number density
   p0=plot(/current,dimensions=[1300,800],migsi1(w).s1970,migsi1(w).nden,thick=1,yra=[1e7,5e8], $
   tit=fmttime(xras1970(0),rep='s1970',form='%b %d %Y'), xshowtext=0,$
@@ -66,8 +70,30 @@ for i=0,5 do begin $
 
   ; overplot MSIS model
   P2=PLOT(/overplot,/current,migsi1(w).s1970,migsi1(w).ndenmodel,layout=[3,2,neutral(i)],'b',name='MSIS',xshowtext=0)
+  ; Add hemisphere label to neutral panel
+  tneut=text(target=p0,0.05,1.02,hemlabel[i],/relative,color=hemcolor[i],font_size=14,font_style='bold')&$
+    ;
+    ; Day/Night transition line at magnetic pole crossing
+    ;
 
+    ; Find the maximum absolute magnetic latitude (pole crossing)
+    max_mlat_idx = where(abs(migsi1.mlat) eq max(abs(migsi1.mlat)))
+  t_pole = migsi1[max_mlat_idx[0]].s1970
 
+  ; Determine if this is dawn or dusk based on MLT at pole crossing
+  mlt_at_pole = migsi1[max_mlat_idx[0]].mlt
+
+  if mlt_at_pole ge 3 and mlt_at_pole le 9 then begin
+    label_text = 'Dawn'
+  endif else if mlt_at_pole ge 15 and mlt_at_pole le 21 then begin
+    label_text = 'Dusk'
+  endif else begin
+    label_text = 'Pole'  ; fallback if neither dawn nor dusk
+  endelse
+
+  ; --- Neutral panel ---
+  pline_pole_n = plot([t_pole, t_pole], p0.yrange, /overplot, color='gray', linestyle=2, thick=1)
+  ;ptext_pole_n = text(t_pole, p0.yrange[1]*0.95, label_text, target=p0, /data, alignment=0.5, font_size=10, color='gray
   ; calculate number density from TIEGCM
   mm=1/((tiegcm.rhoo2/31.999)+(tiegcm.rhoo/15.999)+(tiegcm.n2/28.0134)+(tiegcm.rhoNO/30.01)+(tiegcm.rhon4s/88.0918)+(tiegcm.he/4.0026)) ; amu g/mol
   mm_kg = mm / (!const.na*1e3)
@@ -92,13 +118,22 @@ for i=0,5 do begin $
     xra=xras1970,xtickvalues=ticks1970,xminor=4,xtickname=ticklabs,$
     font_size=12,xtickfont_size=10.5,ytickfont_size=12,layout=[3,4,ion(i)],margin=[0.25,0.25,0.1,0],name='PIP','r',ytit='Ion Density $\n (cm^{-3})$',yra=[1e4,1.1e6])&$
   ; overplot tiegcm plasma density
+  ;p5=plot(/current,/overplot,tiegcm(tt).s1970,$
+  ;  (tiegcm(tt).n_oplus+tiegcm(tt).n_o2plus),'cyan',layout=[3,4,ion(i)],margin=[0.25,0.25,0.1,0],thick=2,name='TIEGCM')
   p5=plot(/current,/overplot,tiegcm(tt).s1970,$
-    (tiegcm(tt).n_oplus+tiegcm(tt).n_o2plus),'cyan',layout=[3,4,ion(i)],margin=[0.25,0.25,0.1,0],thick=2,name='TIEGCM')
-  
+    (tiegcm(tt).N_E),'cyan',layout=[3,4,ion(i)],margin=[0.25,0.25,0.1,0],thick=2,name='TIEGCM')
   ; overplot iri density
   p6=plot(/current,/overplot,iri(tiri).time,$
     iri(tiri)._NE/1e6,'dark violet',thick=2,layout=[3,4,ion(i)],margin=[0.25,0.3,0.1,0],name='IRI')
+  
 
+  ; --- Ion panel ---
+  pline_pole_i = plot([t_pole, t_pole], p1.yrange, /overplot, color='gray', linestyle=2, thick=1)
+  ;ptext_pole_i = text(t_pole, p1.yrange[1]*0.95, label_text, target=p1, /data, alignment=0.5, font_size=10, color='gray')
+
+
+  ; Add hemisphere label to ion panel
+  ;tion=text(target=p1,0.05,0.92,hemlabel[i],/relative,color=hemcolor[i],font_size=14,font_style='bold')&$
 
   phtextunits=text(target=p1,(p1.xrange)(0)-0.15*((p1.xrange)(1)-(p1.xrange)(0)),(p1.yrange)(0),/data,clip=0,al=0.5,vert=1.01, $
     '!C!C!Ahhmm!C!Adeg!C!Ahr',font_size=10.5)&$
@@ -108,7 +143,6 @@ for i=0,5 do begin $
     leg = LEGEND(/DATA, /AUTO_TEXT_COLOR,target=[p1,p6,p5],position = [ticks1970(-1), 1e6],transparency=100,linestyle=6,sample_width=0,vertical_spacing=0.01,font_size=12)&$
 
 endfor
-
 
 ;plot outlines
 left=polyline([0,0],[405,800],/device,color='light salmon',thick=15)

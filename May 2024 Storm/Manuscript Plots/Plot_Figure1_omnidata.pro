@@ -17,7 +17,7 @@ migsifile=[ 'LLITEDB_MIGSI_20240507_033038_L2_v01.nc',$
 dtime0NH=[]
 dtime0SH=[]
 
-for i=0,n_elements(may_data)-1 do begin &$
+for i=0,n_elements(migsifile)-1 do begin &$
 
   migsi=read_migsi_l2file(file=migsidatadir+migsifile(i)) &$
 

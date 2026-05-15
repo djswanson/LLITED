@@ -32,9 +32,33 @@ p1=plot(/current,/pol,aspect_r=1,[0],[0],axis_style=4,symbol=1,xra=[-.5,.5],yra=
 tit='Northern Hemisphere!C',font_size=12,layout=[2,1,1],dim=[600,310]) &$ 
 for i=15,45,15 do dum=plot(/over,i/90.0*cos(findgen(361)*!dtor),i/90.0*sin(findgen(361)*!dtor),thick=0) &$
 
+
+; Add PFISR location 
+pfisr_mlat = 65.808 ;  MIGSI is at 65.861 at this point
+pfisr_mlt  = 22.446 ; MIGSI is at 22.4328 at this point
+cart_pfisr = cv_coord(/deg, /double, $
+  from_polar=transpose([[(pfisr_mlt - 6)*15], [1 - pfisr_mlat/90]]), /to_rect)
+dum_pfisr = plot(/over, cart_pfisr(0,*), cart_pfisr(1,*), $
+  symbol='circle', sym_filled=1, sym_size=1.5, 'r', linestyle=6)
+dum = text(target=p1, cart_pfisr(0,0)+0.015, cart_pfisr(1,0)+0.01, /data, clip=0, $
+  'PFISR', al=0.0, vert=0.0, font_size=10)
+
+; Add RISR-N location 
+risrn_mlat = 83.273; MIGSI is at 86.877 at this point
+risrn_mlt  = 19.1191;MIGSI is at 19.07 at this point
+cart_risrn = cv_coord(/deg, /double, $
+  from_polar=transpose([[(risrn_mlt - 6)*15], [1 - risrn_mlat/90]]), /to_rect)
+dum_risrn = plot(/over, cart_risrn(0,*), cart_risrn(1,*), $
+  symbol='circle', sym_filled=1, sym_size=1.5, 'r', linestyle=6)
+dum = text(target=p1, cart_risrn(0,0)-.20, cart_risrn(1,0)+0.02, /data, clip=0, $
+  'RISR-N',al=0.0, vert=0.0, font_size=10)
+  
+  
 for i=0,24,6 do dum=plot(/over,/pol,[40,50]/90.0,replicate(i*15*!dtor,2),thick=1) &$
 for i=0,24 do dum=plot(/over,/pol,[42.5,47.5]/90.0,replicate(i*15*!dtor,2),thick=0) &$
 dum=text(target=p1,.37,.37,/data,clip=0,'45$\deg$',al=0.0,vert=0.5,font_size=11) &$
+dum=text(target=p1,.25,.25,/data,clip=0,'60$\deg$',al=0.0,vert=0.5,font_size=11) &$
+dum=text(target=p1,.12,.12,/data,clip=0,'75$\deg$',al=0.0,vert=0.5,font_size=11) &$
 
 
 dum=text(target=p1,.55,0,/data,clip=0,'06',al=0.0,vert=0.5,font_size=12) &$
@@ -52,13 +76,16 @@ dum6=plot(/over,cart(0,*),cart(1,*),thick=1,'b',name='May 12') &$
 leg = LEGEND(/DATA, /AUTO_TEXT_COLOR,target=[dum4,dum5,dum6],position = [-0.40,-0.2],transparency=100,linestyle=6,sample_width=0,font_size=11)
 
 ; PLOT SOUTHERN HEMISPHERE
-
 p1=plot(/current,/pol,aspect_r=1,[0],[0],axis_style=4,symbol=1,xra=[-0.5,0.5],yra=[-0.5,0.5], $
 tit='Southern Hemisphere!C',font_size=12,layout=[2,1,2]) &$; layout=[3,4,12],margin=[0.16,0.25,0.2,0.25]) &$
 for i=15,45,15 do dum=plot(/over,i/90.0*cos(findgen(361)*!dtor),i/90.0*sin(findgen(361)*!dtor),thick=0) &$
 for i=0,24,6 do dum=plot(/over,/pol,[40,50]/90.0,replicate(i*15*!dtor,2),thick=1) &$
 for i=0,24 do dum=plot(/over,/pol,[42.5,47.5]/90.0,replicate(i*15*!dtor,2),thick=0) &$
 dum=text(target=p1,.37,.37,/data,clip=0,'-45$\deg$',al=0.0,vert=0.5,font_size=11) &$
+dum=text(target=p1,.25,.25,/data,clip=0,'-60$\deg$',al=0.0,vert=0.5,font_size=11) &$
+dum=text(target=p1,.12,.12,/data,clip=0,'-75$\deg$',al=0.0,vert=0.5,font_size=11) &$
+
+
 
 dum=text(target=p1,.55,0,/data,clip=0,'18',al=0.0,vert=0.5,font_size=12) &$
 dum=text(target=p1,0,0.5,/data,clip=0,'12',al=0.5,vert=-0.3,font_size=12) &$
